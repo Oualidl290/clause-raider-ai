@@ -2,12 +2,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { corsHeaders } from "../_shared/cors.ts";
-import { genHash } from "../_shared/utils.ts";
+import { genHash, OPENAI_API_KEY } from "../_shared/utils.ts";
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-if (!OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY is required");
-}
+// No need to check for OPENAI_API_KEY since we're importing it directly
+// if (!OPENAI_API_KEY) {
+//   console.error("OPENAI_API_KEY is required");
+// }
 
 serve(async (req) => {
   // Handle CORS preflight request
