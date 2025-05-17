@@ -2,58 +2,148 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MenuIcon, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, User } from "lucide-react";
+import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+interface NavbarProps {
+  isAuthenticated?: boolean;
+}
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      // Clean up auth state
+      cleanupAuthState();
+      
+      // Attempt global sign out
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Ignore errors
+      }
+      
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out"
+      });
+      
+      // Force page reload for a clean state
+      window.location.href = '/';
+    } catch (error: any) {
+      toast({
+        title: "Error signing out",
+        description: error.message || "There was a problem signing out",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
-    <nav className="bg-white border-b border-gray-100 py-4 px-6 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <Link to="/" className="flex items-center">
-            <span className="text-tos-navy font-bold text-xl font-heading">TOS<span className="text-tos-blue">Raider</span></span>
-          </Link>
-        </div>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-gray-700 hover:text-tos-blue transition duration-200">Home</Link>
-          <Link to="/how-it-works" className="text-gray-700 hover:text-tos-blue transition duration-200">How It Works</Link>
-          <Link to="/pricing" className="text-gray-700 hover:text-tos-blue transition duration-200">Pricing</Link>
-          <Link to="/about" className="text-gray-700 hover:text-tos-blue transition duration-200">About</Link>
-          <div className="flex space-x-2">
-            <Button variant="ghost">Login</Button>
-            <Button className="bg-tos-blue hover:bg-tos-blue/90">Sign Up</Button>
+    <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur z-30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-amber-500">
+                TOS Raider
+              </span>
+            </Link>
           </div>
-        </div>
-
-        {/* Mobile Toggle */}
-        <div className="md:hidden">
-          <Button variant="ghost" size="icon" onClick={toggleMenu}>
-            {isMenuOpen ? <X className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-          </Button>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-8 items-center">
+            <Link to="/" className="text-sm font-medium hover:text-primary">
+              Home
+            </Link>
+            
+            {isAuthenticated && (
+              <>
+                <Link to="/dashboard" className="text-sm font-medium hover:text-primary">
+                  Dashboard
+                </Link>
+                <Link to="/analyze" className="text-sm font-medium hover:text-primary">
+                  Analyze TOS
+                </Link>
+              </>
+            )}
+            
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/analyze">Analyze TOS</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild>
+                <Link to="/login">Sign In</Link>
+              </Button>
+            )}
+          </nav>
+          
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-screen p-2">
+                <DropdownMenuItem asChild>
+                  <Link to="/">Home</Link>
+                </DropdownMenuItem>
+                
+                {isAuthenticated && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/analyze">Analyze TOS</Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                
+                <DropdownMenuSeparator />
+                
+                {isAuthenticated ? (
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Sign Out
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    <Link to="/login">Sign In</Link>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-100 py-4">
-          <div className="flex flex-col space-y-3 px-6">
-            <Link to="/" className="text-gray-700 hover:text-tos-blue transition duration-200 py-2" onClick={toggleMenu}>Home</Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-tos-blue transition duration-200 py-2" onClick={toggleMenu}>How It Works</Link>
-            <Link to="/pricing" className="text-gray-700 hover:text-tos-blue transition duration-200 py-2" onClick={toggleMenu}>Pricing</Link>
-            <Link to="/about" className="text-gray-700 hover:text-tos-blue transition duration-200 py-2" onClick={toggleMenu}>About</Link>
-            <div className="flex flex-col space-y-2 pt-2">
-              <Button variant="ghost" onClick={toggleMenu}>Login</Button>
-              <Button className="bg-tos-blue hover:bg-tos-blue/90" onClick={toggleMenu}>Sign Up</Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
+    </header>
   );
 };
 

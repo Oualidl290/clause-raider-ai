@@ -1,1 +1,8 @@
+
 project_id = "xrjgvtwtywsgjydzkbdd"
+
+[functions.analyze-tos]
+verify_jwt = true
+
+[functions.generate-action] 
+verify_jwt = true

@@ -9,7 +9,179 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      clauses: {
+        Row: {
+          category: string
+          created_at: string
+          document_id: string
+          enforceable: boolean | null
+          id: string
+          loophole_summary: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          text: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          document_id: string
+          enforceable?: boolean | null
+          id?: string
+          loophole_summary?: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          text: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          document_id?: string
+          enforceable?: boolean | null
+          id?: string
+          loophole_summary?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clauses_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "tos_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loophole_actions: {
+        Row: {
+          action_type: Database["public"]["Enums"]["action_type"]
+          clause_id: string
+          created_at: string
+          email_template: string | null
+          id: string
+          legal_reference: string | null
+          status: string | null
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["action_type"]
+          clause_id: string
+          created_at?: string
+          email_template?: string | null
+          id?: string
+          legal_reference?: string | null
+          status?: string | null
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["action_type"]
+          clause_id?: string
+          created_at?: string
+          email_template?: string | null
+          id?: string
+          legal_reference?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loophole_actions_clause_id_fkey"
+            columns: ["clause_id"]
+            isOneToOne: false
+            referencedRelation: "clauses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
+      tos_documents: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          raw_text: string
+          status: Database["public"]["Enums"]["document_status"]
+          url: string | null
+          user_id: string
+          version_hash: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          raw_text: string
+          status?: Database["public"]["Enums"]["document_status"]
+          url?: string | null
+          user_id: string
+          version_hash: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          raw_text?: string
+          status?: Database["public"]["Enums"]["document_status"]
+          url?: string | null
+          user_id?: string
+          version_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tos_documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_api_usage: {
+        Row: {
+          calls_today: number
+          id: string
+          last_call: string
+          plan: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          calls_today?: number
+          id?: string
+          last_call?: string
+          plan?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          calls_today?: number
+          id?: string
+          last_call?: string
+          plan?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_api_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +190,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      action_type: "cancel" | "opt-out" | "refund" | "delete-data"
+      document_status: "pending" | "processing" | "analyzed" | "failed"
+      risk_level: "low" | "medium" | "high"
+      user_role: "free" | "pro" | "elite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +308,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      action_type: ["cancel", "opt-out", "refund", "delete-data"],
+      document_status: ["pending", "processing", "analyzed", "failed"],
+      risk_level: ["low", "medium", "high"],
+      user_role: ["free", "pro", "elite"],
+    },
   },
 } as const
