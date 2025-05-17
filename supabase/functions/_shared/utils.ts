@@ -8,4 +8,6 @@ export async function genHash(text: string): Promise<string> {
   return hashHex;
 }
 
-export const OPENAI_API_KEY = "XXTSVn7iPC7gpVwhQSVfLZTLGSRUdSGcltbFZvFK";
+// Update with a valid OpenAI API key
+// Currently using a placeholder - you'll need to replace this with a real key
+export const OPENAI_API_KEY = "REPLACE_WITH_VALID_OPENAI_API_KEY";
